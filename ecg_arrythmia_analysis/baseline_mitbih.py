@@ -3,8 +3,7 @@ import numpy as np
 
 from tensorflow.keras import optimizers, losses, activations, models
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler, ReduceLROnPlateau
-from tensorflow.keras.layers import Dense, Input, Dropout, Convolution1D, MaxPool1D, GlobalMaxPool1D, GlobalAveragePooling1D, \
-    concatenate
+from tensorflow.keras.layers import Dense, Input, Dropout, Convolution1D, MaxPool1D, GlobalMaxPool1D, GlobalAveragePooling1D, concatenate
 from sklearn.metrics import f1_score, accuracy_score
 
 MODEL_PATH = 'models/'
