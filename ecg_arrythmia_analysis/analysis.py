@@ -1,6 +1,9 @@
-from RCNN import *
-from RNN import *
-from visualization import *
+#%%
+
+from ecg_arrythmia_analysis.dataloader import *
+from ecg_arrythmia_analysis.RCNN import *
+from ecg_arrythmia_analysis.RNN import *
+from ecg_arrythmia_analysis.visualization import *
 
 #%%
 

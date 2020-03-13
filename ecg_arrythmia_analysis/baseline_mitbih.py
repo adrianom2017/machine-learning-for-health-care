@@ -1,7 +1,7 @@
 #%%
 # import pandas as pd
 import numpy as np
-from dataloader import *
+from ecg_arrythmia_analysis.dataloader import *
 
 from tensorflow.keras import optimizers, losses, activations, models
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler, ReduceLROnPlateau
@@ -59,6 +59,8 @@ callbacks_list = [checkpoint, early, redonplat]  # early
 #%%
 
 Y, X, Y_test, X_test = get_mitbih(path=DATA_PATH)
+
+#%%
 
 model.fit(X, Y, epochs=1000, verbose=2, callbacks=callbacks_list, validation_split=0.1)
 
