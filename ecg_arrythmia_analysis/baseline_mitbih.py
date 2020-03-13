@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
 
-from keras import optimizers, losses, activations, models
-from keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler, ReduceLROnPlateau
-from keras.layers import Dense, Input, Dropout, Convolution1D, MaxPool1D, GlobalMaxPool1D, GlobalAveragePooling1D, \
+from tensorflow.keras import optimizers, losses, activations, models
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler, ReduceLROnPlateau
+from tensorflow.keras.layers import Dense, Input, Dropout, Convolution1D, MaxPool1D, GlobalMaxPool1D, GlobalAveragePooling1D, \
     concatenate
 from sklearn.metrics import f1_score, accuracy_score
 
+MODEL_PATH = 'models/'
 
 df_train = pd.read_csv("data/mitbih_train.csv", header=None)
 df_train = df_train.sample(frac=1)
@@ -51,7 +52,8 @@ def get_model():
     return model
 
 model = get_model()
-file_path = "baseline_cnn_mitbih.h5"
+file_path = MODEL_PATH + "baseline_cnn_mitbih.h5"
+
 checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 early = EarlyStopping(monitor="val_acc", mode="max", patience=5, verbose=1)
 redonplat = ReduceLROnPlateau(monitor="val_acc", mode="max", patience=3, verbose=2)
