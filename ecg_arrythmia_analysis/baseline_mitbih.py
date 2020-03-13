@@ -1,23 +1,19 @@
-import pandas as pd
+#%%
+# import pandas as pd
 import numpy as np
+from dataloader import *
 
 from tensorflow.keras import optimizers, losses, activations, models
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler, ReduceLROnPlateau
 from tensorflow.keras.layers import Dense, Input, Dropout, Convolution1D, MaxPool1D, GlobalMaxPool1D, GlobalAveragePooling1D, concatenate
 from sklearn.metrics import f1_score, accuracy_score
 
+#%%
+
+DATA_PATH = 'data/'
 MODEL_PATH = 'models/'
 
-df_train = pd.read_csv("data/mitbih_train.csv", header=None)
-df_train = df_train.sample(frac=1)
-df_test = pd.read_csv("data/mitbih_test.csv", header=None)
-
-Y = np.array(df_train[187].values).astype(np.int8)
-X = np.array(df_train[list(range(187))].values)[..., np.newaxis]
-
-Y_test = np.array(df_test[187].values).astype(np.int8)
-X_test = np.array(df_test[list(range(187))].values)[..., np.newaxis]
-
+#%%
 
 def get_model():
     nclass = 5
@@ -50,6 +46,8 @@ def get_model():
     model.summary()
     return model
 
+#%%
+
 model = get_model()
 file_path = MODEL_PATH + "baseline_cnn_mitbih.h5"
 
@@ -58,11 +56,20 @@ early = EarlyStopping(monitor="val_acc", mode="max", patience=5, verbose=1)
 redonplat = ReduceLROnPlateau(monitor="val_acc", mode="max", patience=3, verbose=2)
 callbacks_list = [checkpoint, early, redonplat]  # early
 
+#%%
+
+Y, X, Y_test, X_test = get_mitbih(path=DATA_PATH)
+
 model.fit(X, Y, epochs=1000, verbose=2, callbacks=callbacks_list, validation_split=0.1)
+
+#%%
+
 model.load_weights(file_path)
 
 pred_test = model.predict(X_test)
 pred_test = np.argmax(pred_test, axis=-1)
+
+#%%
 
 f1 = f1_score(Y_test, pred_test, average="macro")
 
