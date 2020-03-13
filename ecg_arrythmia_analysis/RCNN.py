@@ -19,6 +19,10 @@ Y_test = np.array(df_test[187].values).astype(np.int8)
 X_test = np.array(df_test[list(range(187))].values)[..., np.newaxis]
 
 
+def res_block():
+    block = None
+    return block
+
 def get_model():
     nclass = 5
     inp = Input(shape=(187, 1))
