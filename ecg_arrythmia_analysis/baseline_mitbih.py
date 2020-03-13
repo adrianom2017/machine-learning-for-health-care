@@ -8,9 +8,9 @@ from keras.layers import Dense, Input, Dropout, Convolution1D, MaxPool1D, Global
 from sklearn.metrics import f1_score, accuracy_score
 
 
-df_train = pd.read_csv("../input/mitbih_train.csv", header=None)
+df_train = pd.read_csv("data/mitbih_train.csv", header=None)
 df_train = df_train.sample(frac=1)
-df_test = pd.read_csv("../input/mitbih_test.csv", header=None)
+df_test = pd.read_csv("data/mitbih_test.csv", header=None)
 
 Y = np.array(df_train[187].values).astype(np.int8)
 X = np.array(df_train[list(range(187))].values)[..., np.newaxis]
