@@ -10,6 +10,7 @@ from sklearn.metrics import f1_score, accuracy_score
 #%%
 
 MODEL_PATH = 'models/'
+DATA_PATH = 'data/'
 
 MODEL_DICT = {'cnn': CNNmodel, 'rcnn': RCNNmodel, 'rnn': RNNmodel, 'ensemble': Ensemble_FFL_block}
 #%%
@@ -24,15 +25,27 @@ SPEC_LIST = {'cnn': CNN_SPECS,
 
 #%%
 
-def architect(data, type):
+def architect(mode, data, type, run_id):
     if not data.isinstance(list):
         data = list(data)
     if not type.isinstance(list):
         type = list(type)
-    id = 0
-    for d in data:
-        for t in type:
-            specs =
+    id = run_id
+    if mode is 'training':
+        optimizers = [tf.keras.optimizers.Adam(0.001)]
+        lr_list = [0.01, 0.001]
+        for d in data:
+            for t in type:
+                for opt in optimizers:
+                    for lr in lr_list:
+                        specs = SPEC_LIST[t]
+    if mode is 'testing':
+        pass
+    if mode is 'ensemble':
+        pass
+    if mode is 'visualization':
+        pass
+
 
 
 #%%
