@@ -21,5 +21,3 @@ def plotting(y_test, y_pred, data = 'mitbih', type='rnn'):
         # plot accuracy, AUROC, AUPRC
         # plot tail-end-plot
         pass
-
-print("")
