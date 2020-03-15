@@ -33,7 +33,8 @@ class ResBlock(tf.keras.Model):
 
 
 class RCNNmodel(tf.keras.Model):
-    def __init__(self, n_res=4, kernel_size=3, filters=[3, 12, 48, 192], n_ffl=2, n_classes=1):
+    def __init__(self, specs):
+        n_res, kernel_size, filters, n_ffl, n_classes = specs
         super(RCNNmodel, self).__init__()
         self.n_classes = n_classes
         self.n_res = n_res
@@ -58,8 +59,9 @@ class RCNNmodel(tf.keras.Model):
 
 
 class CNNmodel(tf.keras.Model):
-    def __init__(self, n_cnn=4, kernel_sizes=[5, 3, 3, 3], filters=[16, 32, 32, 256], n_classes=1):
+    def __init__(self, specs):
         super(CNNmodel, self).__init__()
+        n_cnn, kernel_sizes, filters, n_classes = specs
         self.model = tf.keras.Sequential()
         for _ in range(n_cnn):
             self.model.add(Conv1D(filters[_], kernel_size=kernel_sizes[_], activation=tf.keras.activations.relu,
@@ -81,9 +83,9 @@ class CNNmodel(tf.keras.Model):
 
 
 class RNNmodel(tf.keras.Model):
-    def __init__(self, n_rnn=2, use_cnn=False, cnn_window=1, cnn_emb_size=16, hidden_size=256, type='LSTM', n_ffl=2,
-                 n_classes=1):
+    def __init__(self, specs):
         super(RNNmodel, self).__init__()
+        n_rnn, use_cnn, cnn_window, cnn_emb_size, hidden_size, type, n_ffl, n_classes = specs
         self.n_classes = n_classes
         self.use_cnn = use_cnn
         self.cnn_1x1 = tf.keras.layers.Conv1D(cnn_emb_size, cnn_window, padding='same')
@@ -113,13 +115,9 @@ class RNNmodel(tf.keras.Model):
     def call(self, x):
         if self.use_cnn:
             x = self.cnn_1x1(x)
-        print(x.shape)
         x = self.rnn_block(x)
-        print(x.shape)
         x = self.ffl_block(x)
-        print(x.shape)
         x = self.output_layer(x)
-        print(x.shape)
         if self.n_classes == 1:
             return tf.nn.sigmoid(x)
         else:
@@ -127,12 +125,13 @@ class RNNmodel(tf.keras.Model):
 
 
 class Ensemble_FFL_block(tf.keras.Model):
-    def __init__(self, n_ffl=3, dense_layer_size=64, n_classes=1):
+    def __init__(self, specs):
         super(Ensemble_FFL_block, self).__init__()
+        n_ffl, dense_layer_size, n_classes = specs
         self.n_classes = n_classes
         self.model = tf.keras.Sequential()
         for _ in range(n_ffl):
-            self.model.add(tf.keras.layers(Dense(dense_layer_size)))
+            self.model.add(tf.keras.layers.Dense(dense_layer_size))
             self.model.add(tf.keras.layers.Dropout(0.1))
             self.model.add(tf.keras.layers.BatchNormalization())
             self.model.add(tf.keras.layers.LeakyReLU())

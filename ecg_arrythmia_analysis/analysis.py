@@ -3,10 +3,28 @@
 from ecg_arrythmia_analysis.code.dataloader import *
 from ecg_arrythmia_analysis.code.architectures import *
 from ecg_arrythmia_analysis.code.visualization import *
+from ecg_arrythmia_analysis.code.functions import *
 
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
 from sklearn.metrics import f1_score, accuracy_score
+
+#%%
+
+
+MODEL_PATH = 'models/'
+DATA_PATH = 'data/'
+
+MODEL_DICT = {'cnn': CNNmodel, 'rcnn': RCNNmodel, 'rnn': RNNmodel, 'ensemble': Ensemble_FFL_block}
+# %%
+CNN_SPECS = (4, [5, 3, 3, 3], [16, 32, 32, 256], 1)
+RCNN_SPECS = (4, 3, [3, 12, 48, 192], 2, 1)
+RNN_SPECS = (2, False, 3, 16, 256, 'LSTM', 2, 1)
+ENSEMBLE_SPECS = (3, 64, 1)
+SPEC_LIST = {'cnn': CNN_SPECS,
+             'rcnn': RCNN_SPECS,
+             'rnn': RNN_SPECS,
+             'ensemble': ENSEMBLE_SPECS}
 
 #%%
 
@@ -21,28 +39,51 @@ print("VISUALIZATION")
 
 print("")
 #%%
-print("RESIDUAL CONVOLUTIONAL NETWORKS")
+
+# Run Convolutional Networks
+print("CONVOLUTIONAL NETWORKS")
+
+# Run CNN on mitbih
+# architect(mode='training', data='mitbih', type='cnn', run_id=100)
+
+# Run CNN on ptbdb
+# architect(mode='training', data='ptbdb', type='cnn', run_id=150)
+
+print("")
+#%%
 
 # Run Residual Networks
+print("RESIDUAL CONVOLUTIONAL NETWORKS")
 
 # Run RCNN on mitbih
+# architect('training', 'mitbih', 'rcnn', 200)
 
 # Run RCNN on ptbdb
+# architect('training', 'ptbdb', 'rcnn', 250)
+architect('testing', 'ptbdb', 'rcnn', 250)
 
 print("")
 #%%
 # Run Recurrent Networks
+print("RECURRENT NETWORKS")
 
 # Run RNN on mitbih
+# architect('training', 'mitbih', 'rnn', 300)
 
 # Run RNN on ptbdb
+# architect('training', 'ptbdb', 'rnn', 350)
 
 print("")
 #%%
 
 # Run Ensemble of Networks
 print("ENSEMBLE NETWORKS")
+
 # define stacked model from multiple member input models
+architect('training', 'mitbih', 'ensemble', 500)
+
+# Run RNN on ptbdb
+architect('training', 'ptbdb', 'ensemble', 550)
 
 print("")
 #%%
@@ -53,8 +94,9 @@ print("TRANSFER LEARNING")
 # Pretraining on MIT
 
 # Freeze RNN layers
-
+transfer_learning(data='mitbih', type_id=('cnn', 100), id=700)
 # Train whole model
+transfer_learning(data='ptbdb', type_id=('cnn', 100), id=750)
 
 print("")
 #%%
