@@ -31,16 +31,30 @@ def architect(mode, data, type, run_id):
     if not type.isinstance(list):
         type = list(type)
     id = run_id
+
+    # Testing
     if mode is 'training':
-        optimizers = [tf.keras.optimizers.Adam(0.001)]
+        optimizers = ['Adam']
+        # dropouts = [0.1, 0.5]
+        # n_layers = [1, 2, 3]
         lr_list = [0.01, 0.001]
         for d in data:
             for t in type:
-                for opt in optimizers:
+                for o in optimizers:
                     for lr in lr_list:
+                        if o is 'Adam':
+                            opt = tf.keras.optimizers.Adam(lr)
                         specs = SPEC_LIST[t]
+                        m = get_architecture(t, specs)
+                        training(m, opt, d, t, id)
+
+    # Testing
     if mode is 'testing':
-        pass
+        for d in data:
+            for t in type:
+                specs = SPEC_LIST[t]
+                m = get_architecture(t, specs)
+                testing(m, d, t, id)
     if mode is 'ensemble':
         pass
     if mode is 'visualization':
@@ -50,8 +64,8 @@ def architect(mode, data, type, run_id):
 
 #%%
 
-def training(model, opt, data, type):
-    file_path = MODEL_PATH + type + '_' + data + '.h5'
+def training(model, opt, data, type, id):
+    file_path = MODEL_PATH + type + '_' + data + '_' + id + '.h5'
     checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
     early = EarlyStopping(monitor="val_acc", mode="max", patience=5, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_acc", mode="max", patience=3, verbose=2)
@@ -64,8 +78,8 @@ def training(model, opt, data, type):
     model.fit(X, Y, epochs=1000, callbacks=callbacks_list, validation_split=0.1)
 
 
-def testing(model, data, type):
-    file_path = MODEL_PATH + type + '_' + data + '.h5'
+def testing(model, data, type, id):
+    file_path = MODEL_PATH + type + '_' + data + '_' + id + '.h5'
     model.load_weights(file_path)
     if data is 'mitbih':
         _, _, Y_test, X_test = get_mitbih()
@@ -85,9 +99,9 @@ def get_architecture(type, specs):
 
 #%%
 
-def load_models(data, types):
+def load_models(data, type_ids):
     model_list = []
-    for t in types:
+    for t, id in type_ids:
         file_path = MODEL_PATH + data + '_' + t + '.h5'
         specs = SPEC_LIST['t']
         empty = get_architecture(t, specs)
@@ -116,11 +130,10 @@ def define_stacked_model(models):
 
 
 # specify settings
-def run_ensemble(data, types):
-    types = ['rcnn', 'rnn']
+def run_ensemble(data, type_ids):
     data = 'mitbih'
     # load all corresponding models into model-list
-    models = load_models(data, types)
+    models = load_models(data, type_ids)
     # feed model list into ensemble
     model = define_stacked_model(models)
 
