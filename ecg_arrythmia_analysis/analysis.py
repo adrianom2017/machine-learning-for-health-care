@@ -1,4 +1,4 @@
-# %%
+#%%
 
 from ecg_arrythmia_analysis.dataloader import *
 from ecg_arrythmia_analysis.architectures import *
@@ -51,6 +51,7 @@ def testing(model, data, type):
     print("Test f1 score : %s " % f1)
     acc = accuracy_score(Y_test, pred_test)
     print("Test accuracy score : %s " % acc)
+    return {'target': Y_test, 'prediction': pred_test}
 
 #%%
 """
@@ -92,7 +93,7 @@ model.compile(optimizer=opt, loss=tf.keras.losses.binary_crossentropy, metrics=[
 model.fit(X, Y, epochs=1000, callbacks=callbacks_list, validation_split=0.1)
 """
 
-# %%
+#%%
 # Run Recurrent Networks
 
 # Run RNN on mitbih
@@ -132,7 +133,7 @@ tf.compat.v1.disable_eager_execution()
 model.fit(X, Y, epochs=1000, callbacks=callbacks_list, validation_split=0.1)
 """
 
-# %%
+#%%
 
 # Run Ensemble of Networks
 print("ENSEMBLE NETWORKS")
@@ -165,7 +166,7 @@ def define_stacked_model(models):
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 
-# %%
+#%%
 
 # Use TFL
 print("TRANSFER LEARNING")
@@ -176,4 +177,32 @@ print("TRANSFER LEARNING")
 
 # Train whole model
 
-# %%
+#%%
+
+
+def evaluation(y_test, y_pred, data = 'mitbih', type='rnn'):
+    if data is 'mitbih':
+        # report accuracy
+        pass
+    else:
+        # report accuracy, AUROC, AUPRC
+        pass
+
+
+def tail_end_plot(y_pred, y_test, data, type):
+    pass
+
+
+def plotting(y_test, y_pred, data = 'mitbih', type='rnn'):
+    if data is 'mitbih':
+        # plot accuracy
+        # plot tail-end-plot
+        pass
+    else:
+        # plot accuracy, AUROC, AUPRC
+        # plot tail-end-plot
+        pass
+
+
+
+#%%
