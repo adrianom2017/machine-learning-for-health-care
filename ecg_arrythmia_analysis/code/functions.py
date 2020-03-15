@@ -23,13 +23,12 @@ SPEC_LIST = {'cnn': CNN_SPECS,
 
 #%%
 
-def architect(mode, data, type, run_id):
+def architect(mode, data, type, run_id, type_ids=None):
     if isinstance(data, str):
         data = [data]
     if isinstance(type, str):
         type = [type]
     id = run_id
-
     # Testing
     if mode is 'training':
         optimizers = ['Adam']
@@ -50,7 +49,6 @@ def architect(mode, data, type, run_id):
 
                         m = get_architecture(t, specs)
                         training(m, opt, d, t, id)
-
     # Testing
     if mode is 'testing':
         for d in data:
@@ -63,7 +61,7 @@ def architect(mode, data, type, run_id):
                 m = get_architecture(t, specs)
                 testing(m, d, t, id)
     if mode is 'ensemble':
-        pass
+        run_ensemble(data=data, type_ids=type_ids, id=run_id)
     if mode is 'visualization':
         pass
 
@@ -117,33 +115,45 @@ def get_architecture(type, specs):
 #%%
 
 def load_models(data, type_ids):
-    if isinstance(type_ids, str):
-        type_ids = list(type_ids)
+    if isinstance(data, list):
+        data = data[0]
+    if isinstance(type_ids, tuple):
+        type_ids = [type_ids]
     model_list = []
-    for t, id in type_ids:
-        file_path = MODEL_PATH + data + '_' + t + '.h5'
-        specs = SPEC_LIST['t']
+    for ti in type_ids:
+        t = ti[0]
+        id = ti[1]
+        file_path = MODEL_PATH + t + '_' + data + '_' + str(id) + '.h5'
+        print(file_path)
+        specs = SPEC_LIST[t]
         empty = get_architecture(t, specs)
+        empty.build(input_shape=(None, 187, 1))
         empty.load_weights(file_path)
         model_list.append(empty)
     return model_list
 
 
-def define_stacked_model(models):
+def define_stacked_model(models, data):
+    print(models)
+    specs = SPEC_LIST['ensemble']
+    if data is 'mitbih':
+        specs = list(specs)
+        specs[-1] = 5
+        specs = tuple(specs)
     # update all layers in all models to not be trainable
     for i in range(len(models)):
         model = models[i]
-        for layer in model.layers:
+        for j, layer in enumerate(model.layers):
             # make not trainable
             layer.trainable = False
             # rename to avoid 'unique layer name' issue
-            layer.name = 'ensemble_' + str(i + 1) + '_' + layer.name
+            # layer.name = 'ens_layer_' + str(i + 1) + '_' + str(j)
     # define multi-headed input
     ensemble_visible = [model.input for model in models]
     # merge output from each model
     ensemble_outputs = [model.output for model in models]
-    merge = tf.concat(ensemble_outputs, 1)
-    output = Ensemble_FFL_block()(merge)
+    merged_output = tf.concat(ensemble_outputs, 1)
+    output = Ensemble_FFL_block(specs=specs)(merged_output)
     model = tf.keras.Model(inputs=ensemble_visible, outputs=output)
     return model
 
@@ -153,9 +163,10 @@ def run_ensemble(data, type_ids, id=500):
     # load all corresponding models into model-list
     models = load_models(data, type_ids)
     # feed model list into ensemble
-    model = define_stacked_model(models)
+    model = define_stacked_model(models, data=data)
     opt = tf.keras.optimizers.Adam(0.001)
     training(model, opt, data, type='ensemble', id=id)
+    testing(model, data, type='ensemble', id=id)
 
 #%%
 
