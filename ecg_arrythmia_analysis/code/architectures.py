@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Conv1D, BatchNormalization, LeakyReLU, Dense
 
 class ResBlock(tf.keras.Model):
     def __init__(self, kernel_size, filter):
-        super(ResBlock, self).__init__(name='ResBlock')
+        super(ResBlock, self).__init__()
         self.filter = filter
         self.pooling_window = 3
 
@@ -35,7 +35,6 @@ class ResBlock(tf.keras.Model):
 class RCNNmodel(tf.keras.Model):
     def __init__(self, n_res=4, kernel_size=3, filters=[3, 12, 48, 192], n_ffl=2, n_classes=1):
         super(RCNNmodel, self).__init__()
-        self.name = 'rcnn'
         self.n_classes = n_classes
         self.n_res = n_res
         self.blocks = tf.keras.Sequential()
@@ -61,8 +60,6 @@ class RCNNmodel(tf.keras.Model):
 class CNNmodel(tf.keras.Model):
     def __init__(self, n_cnn=4, kernel_sizes=[5, 3, 3, 3], filters=[16, 32, 32, 256], n_classes=1):
         super(CNNmodel, self).__init__()
-        self.name = 'cnn'
-        assert len(kernel_sizes) == len(filters) and len(filters) == n_cnn
         self.model = tf.keras.Sequential()
         for _ in range(n_cnn):
             self.model.add(Conv1D(filters[_], kernel_size=kernel_sizes[_], activation=tf.keras.activations.relu,
@@ -87,7 +84,6 @@ class RNNmodel(tf.keras.Model):
     def __init__(self, n_rnn=2, use_cnn=False, cnn_window=1, cnn_emb_size=16, hidden_size=256, type='LSTM', n_ffl=2,
                  n_classes=1):
         super(RNNmodel, self).__init__()
-        self.name = 'rnn'
         self.n_classes = n_classes
         self.use_cnn = use_cnn
         self.cnn_1x1 = tf.keras.layers.Conv1D(cnn_emb_size, cnn_window, padding='same')
@@ -133,7 +129,6 @@ class RNNmodel(tf.keras.Model):
 class Ensemble_FFL_block(tf.keras.Model):
     def __init__(self, n_ffl=3, dense_layer_size=64, n_classes=1):
         super(Ensemble_FFL_block, self).__init__()
-        self.name = 'ensemble'
         self.n_classes = n_classes
         self.model = tf.keras.Sequential()
         for _ in range(n_ffl):

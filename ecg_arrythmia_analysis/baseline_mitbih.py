@@ -1,11 +1,10 @@
 #%%
 # import pandas as pd
-import numpy as np
-from ecg_arrythmia_analysis.dataloader import *
+from ecg_arrythmia_analysis.code.dataloader import *
 
 from tensorflow.keras import optimizers, losses, activations, models
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler, ReduceLROnPlateau
-from tensorflow.keras.layers import Dense, Input, Dropout, Convolution1D, MaxPool1D, GlobalMaxPool1D, GlobalAveragePooling1D, concatenate
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.layers import Dense, Input, Dropout, Convolution1D, MaxPool1D, GlobalMaxPool1D
 from sklearn.metrics import f1_score, accuracy_score
 
 #%%
