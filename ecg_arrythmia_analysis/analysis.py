@@ -3,22 +3,56 @@
 from ecg_arrythmia_analysis.dataloader import *
 from ecg_arrythmia_analysis.architectures import *
 from ecg_arrythmia_analysis.visualization import *
+
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler, ReduceLROnPlateau
 
+from sklearn.metrics import f1_score, accuracy_score
 # %%
-
 # VISUALIZATION
 print("VISUALIZATION")
 
 # Individual visualization mitbih
 
+
 # Individual visualization ptbdb
+
 
 # Global visualization mitbih
 
+
 # Global visualization ptbdb
 
-# %%
+#%%
+
+def training(model, opt, data = 'mitbih', type = 'rcnn'):
+    file_path = MODEL_PATH + type + '_' + data + '.h5'
+    checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    early = EarlyStopping(monitor="val_acc", mode="max", patience=5, verbose=1)
+    redonplat = ReduceLROnPlateau(monitor="val_acc", mode="max", patience=3, verbose=2)
+    callbacks_list = [checkpoint, early, redonplat]
+    if data is 'mitbih':
+        Y, X, Y_test, X_text = get_mitbih()
+    else:
+        Y, X, Y_test, X_text = get_ptbdb()
+    model.compile(optimizer=opt, loss=tf.keras.losses.sparse_categorical_crossentropy, metrics=['acc'])
+    model.fit(X, Y, epochs=1000, callbacks=callbacks_list, validation_split=0.1)
+
+
+def testing(model, data, type):
+    file_path = MODEL_PATH + type + '_' + data + '.h5'
+    model.load_weights(file_path)
+    if data is 'mitbih':
+        _, _, Y_test, X_test = get_mitbih()
+    else:
+        _, _, Y_test, X_test = get_ptbdb()
+    pred_test = model.predict(X_test)
+    pred_test = np.argmax(pred_test, axis=-1)
+    f1 = f1_score(Y_test, pred_test, average="macro")
+    print("Test f1 score : %s " % f1)
+    acc = accuracy_score(Y_test, pred_test)
+    print("Test accuracy score : %s " % acc)
+
+#%%
 """
 # Run Residual Networks
 
