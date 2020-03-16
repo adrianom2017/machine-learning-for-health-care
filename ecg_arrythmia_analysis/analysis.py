@@ -28,9 +28,9 @@ SPEC_LIST = {'cnn': CNN_SPECS,
 # VISUALIZATION
 print("VISUALIZATION")
 
-vis_data('mitbih', 5)
-
-
+n_examples = 5
+vis_data('mitbih', n_examples)
+vis_data('ptbdb', n_examples)
 
 # Individual visualization mitbih
 # Individual visualization ptbdb

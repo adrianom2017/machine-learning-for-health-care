@@ -39,16 +39,21 @@ def vis_data(data, n_example):
     idx = [np.where(y == c)[0] for c in cat]
 
     n_row = len(cat)
-    cur_plt = 1
 
-    for c in cat:
+    fig, ax = plt.subplots(nrows = n_row, ncols=1, sharex = True, sharey= True)
+    plt.xlabel("Time")
+    plt.ylabel('Amplitude')
+    for c_idx, c in enumerate(cat):
         sample = np.random.choice(idx[c],n_example)
-        for i in sample:
-            plt.subplot(n_row, n_example, cur_plt)
+        ax[c_idx].set(title = 'Category {}'.format(c))
+        #ax[c_idx].set_ylabel("Amplitude")
+        ax[c_idx].set_frame_on(False)
+        ax[c_idx].tick_params(labelcolor=(1.,1.,1., 0.0), top='off', bottom='off', left='off', right='off')
+        for count, i in enumerate(sample, start = 1):
+            fig.add_subplot(n_row, n_example, c_idx*n_example + count)
+            #plt.subplot(n_row, n_example, cur_plt)
             plt.plot(range(x[0].shape[0]), x[i])
-            cur_plt += 1
 
-    #plt.show()
     filename = 'ecg_arrythmia_analysis/figures/{}'
+    plt.tight_layout()
     plt.savefig(filename.format(data))
-    pass
