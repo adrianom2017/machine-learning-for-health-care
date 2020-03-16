@@ -4,13 +4,10 @@ from ecg_arrythmia_analysis.code.dataloader import *
 from ecg_arrythmia_analysis.code.architectures import *
 from ecg_arrythmia_analysis.code.visualization import *
 from ecg_arrythmia_analysis.code.functions import *
-
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
-
 from sklearn.metrics import f1_score, accuracy_score
 
 #%%
-
 
 MODEL_PATH = 'models/'
 DATA_PATH = 'data/'
@@ -30,6 +27,25 @@ SPEC_LIST = {'cnn': CNN_SPECS,
 
 # VISUALIZATION
 print("VISUALIZATION")
+
+bih_y, bih_x, _, _  = get_mitbih(path='ecg_arrythmia_analysis/data/')
+ptbdb_y, ptbdb_x, _, _  = get_ptbdb(path='ecg_arrythmia_analysis/data/')
+
+cat = np.unique(bih_y)
+idx = [np.where(bih_y == c)[0] for c in cat]
+
+n_example = 5
+n_row = len(cat)
+cur_plt = 1
+
+for c in cat:
+    sample = np.random.choice(idx[c],n_example)
+    for i in sample:
+        plt.subplot(n_row, n_example, cur_plt)
+        plt.plot(range(bih_x[0].shape[0]), bih_x[i])
+        cur_plt += 1
+
+plt.show()
 
 # Individual visualization mitbih
 # Individual visualization ptbdb
