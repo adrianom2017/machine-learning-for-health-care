@@ -1,4 +1,4 @@
-# %%
+#%%
 import os
 import pandas as pd
 from ecg_arrythmia_analysis.code.dataloader import *
@@ -8,7 +8,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLRO
 
 from sklearn.metrics import f1_score, accuracy_score
 
-# %%
+#%%
 
 MODEL_PATH = 'models/'
 DATA_PATH = 'data/'
@@ -23,7 +23,7 @@ SPEC_LIST = {'cnn': CNN_SPECS,
              'ensemble': ENSEMBLE_SPECS}
 
 
-# %%
+#%%
 
 def architect(mode, data, type, run_id, type_ids=None):
     if isinstance(data, str):
@@ -68,7 +68,7 @@ def architect(mode, data, type, run_id, type_ids=None):
         pass
 
 
-# %%
+#%%
 
 def training(model, opt, data, type, id):
     file_path = MODEL_PATH + type + '_' + data + '_' + str(id) + '.h5'

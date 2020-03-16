@@ -42,15 +42,18 @@ class RCNNmodel(tf.keras.Model):
         for _ in range(n_res):
             self.blocks.add(ResBlock(kernel_size=kernel_size, filter=filters[_]))
         self.blocks.add(GlobalMaxPool1D())
+        self.ffl_block = tf.keras.Sequential()
+        self.ffl_block._name = 'ffl_block'
         for _ in range(n_ffl):
-            self.blocks.add(Dense(1024))
-            self.blocks.add(Dropout(0.1))
-            self.blocks.add(BatchNormalization())
-            self.blocks.add(LeakyReLU())
+            self.ffl_block.add(Dense(1024))
+            self.ffl_block.add(Dropout(0.1))
+            self.ffl_block.add(BatchNormalization())
+            self.ffl_block.add(LeakyReLU())
         self.output_layer = Dense(n_classes)
 
     def call(self, x):
         x = self.blocks(x)
+        x = self.ffl_block(x)
         x = self.output_layer(x)
         if self.n_classes == 1:
             return tf.nn.sigmoid(x)
@@ -74,12 +77,15 @@ class CNNmodel(tf.keras.Model):
             else:
                 self.model.add(GlobalMaxPool1D())
                 self.model.add(Dropout(0.2))
-        self.model.add(Dense(64, activation=tf.keras.activations.relu, name="dense_1"))
-        self.model.add(Dense(64, activation=tf.keras.activations.relu, name="dense_2"))
-        self.model.add(Dense(n_classes, activation=tf.keras.activations.sigmoid, name="dense_3_ptbdb"))
+        self.ffl_block = tf.keras.Sequential()
+        self.ffl_block._name = 'ffl_block'
+        self.ffl_block.add(Dense(64, activation=tf.keras.activations.relu, name="dense_1"))
+        self.ffl_block.add(Dense(64, activation=tf.keras.activations.relu, name="dense_2"))
+        self.ffl_block.add(Dense(n_classes, activation=tf.keras.activations.sigmoid, name="dense_3_ptbdb"))
 
     def call(self, x):
-        return self.model(x)
+        x = self.model(x)
+        return self.ffl_block(x)
 
 
 class RNNmodel(tf.keras.Model):
@@ -105,6 +111,7 @@ class RNNmodel(tf.keras.Model):
             self.rnn_block.add(self.rnn_blocks)
         self.rnn_block.add(self.rnn_out)
         self.ffl_block = tf.keras.Sequential()
+        self.ffl_block._name = 'ffl_block'
         for _ in range(n_ffl):
             self.ffl_block.add(tf.keras.layers.Dense(1024))
             self.ffl_block.add(tf.keras.layers.Dropout(0.1))
@@ -130,6 +137,7 @@ class Ensemble_FFL_block(tf.keras.Model):
         n_ffl, dense_layer_size, n_classes = specs
         self.n_classes = n_classes
         self.model = tf.keras.Sequential()
+        self.model._name = 'ffl_block'
         for _ in range(n_ffl):
             self.model.add(tf.keras.layers.Dense(dense_layer_size))
             self.model.add(tf.keras.layers.Dropout(0.1))

@@ -80,7 +80,7 @@ print("ENSEMBLE NETWORKS")
 # architect('ensemble', 'mitbih', 'ensemble', 500, type_ids = [('rcnn', 200), ('cnn', 100)])
 
 # Run RNN on ptbdb
-architect('ensemble', 'ptbdb', 'ensemble', 550, type_ids = [('rcnn', 250), ('cnn', 150)])
+# architect('ensemble', 'ptbdb', 'ensemble', 550, type_ids = [('rcnn', 250), ('cnn', 150)])
 # architect('ensemble', 'ptbdb', 'ensemble', 550, type_ids = [('rcnn', 250), ('cnn', 150)])
 
 print("")
@@ -94,7 +94,7 @@ print("TRANSFER LEARNING")
 # Freeze RNN layers
 # transfer_learning(data='mitbih', type_id=('cnn', 100), id=700)
 # Train whole model
-# transfer_learning(data='ptbdb', type_id=('cnn', 100), id=750)
+transfer_learning(data='ptbdb', type_id=('cnn', 150), id=750)
 
 print("")
 #%%
