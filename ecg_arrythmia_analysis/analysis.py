@@ -2,7 +2,7 @@
 
 from ecg_arrythmia_analysis.code.dataloader import *
 from ecg_arrythmia_analysis.code.architectures import *
-from ecg_arrythmia_analysis.code.visualization import *
+# from ecg_arrythmia_analysis.code.visualization import *
 from ecg_arrythmia_analysis.code.functions import *
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from sklearn.metrics import f1_score, accuracy_score
@@ -12,17 +12,6 @@ from sklearn.metrics import f1_score, accuracy_score
 MODEL_PATH = 'models/'
 DATA_PATH = 'data/'
 
-MODEL_DICT = {'cnn': CNNmodel, 'rcnn': RCNNmodel, 'rnn': RNNmodel, 'ensemble': Ensemble_FFL_block}
-# %%
-CNN_SPECS = (4, [5, 3, 3, 3], [16, 32, 32, 256], 1)
-RCNN_SPECS = (4, 3, [3, 12, 48, 192], 2, 1)
-RNN_SPECS = (2, False, 3, 16, 256, 'LSTM', 2, 1)
-ENSEMBLE_SPECS = (3, 64, 1)
-SPEC_LIST = {'cnn': CNN_SPECS,
-             'rcnn': RCNN_SPECS,
-             'rnn': RNN_SPECS,
-             'ensemble': ENSEMBLE_SPECS}
-
 #%%
 
 # VISUALIZATION
@@ -30,10 +19,10 @@ print("VISUALIZATION")
 n_examples = 5
 
 # Individual visualization mitbih
-vis_data('mitbih', n_examples)
+# vis_data('mitbih', n_examples)
 
 # Individual visualization ptbdb
-vis_data('ptbdb', n_examples)
+# vis_data('ptbdb', n_examples)
 
 # Global visualization mitbih
 # Was sötte mer da mache?
@@ -91,7 +80,7 @@ print("ENSEMBLE NETWORKS")
 # architect('ensemble', 'mitbih', 'ensemble', 500, type_ids = [('rcnn', 200), ('cnn', 100)])
 
 # Run RNN on ptbdb
-# architect('ensemble', 'ptbdb', 'ensemble', 550, type_ids = [('rcnn', 250), ('cnn', 150)])
+architect('ensemble', 'ptbdb', 'ensemble', 550, type_ids = [('rcnn', 250), ('cnn', 150)])
 # architect('ensemble', 'ptbdb', 'ensemble', 550, type_ids = [('rcnn', 250), ('cnn', 150)])
 
 print("")

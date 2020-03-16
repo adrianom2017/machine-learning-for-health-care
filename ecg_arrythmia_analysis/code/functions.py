@@ -1,10 +1,14 @@
-#%%
+# %%
+import os
+import pandas as pd
 from ecg_arrythmia_analysis.code.dataloader import *
 from ecg_arrythmia_analysis.code.architectures import *
+
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+
 from sklearn.metrics import f1_score, accuracy_score
 
-#%%
+# %%
 
 MODEL_PATH = 'models/'
 DATA_PATH = 'data/'
@@ -12,13 +16,14 @@ DATA_PATH = 'data/'
 CNN_SPECS = (4, [5, 3, 3, 3], [16, 32, 32, 256], 1)
 RCNN_SPECS = (4, 3, [3, 12, 48, 192], 2, 1)
 RNN_SPECS = (2, False, 3, 16, 256, 'LSTM', 2, 1)
-ENSEMBLE_SPECS = (3, 64, 1)
+ENSEMBLE_SPECS = (2, 1024, 1)
 SPEC_LIST = {'cnn': CNN_SPECS,
              'rcnn': RCNN_SPECS,
              'rnn': RNN_SPECS,
              'ensemble': ENSEMBLE_SPECS}
 
-#%%
+
+# %%
 
 def architect(mode, data, type, run_id, type_ids=None):
     if isinstance(data, str):
@@ -62,23 +67,33 @@ def architect(mode, data, type, run_id, type_ids=None):
     if mode is 'visualization':
         pass
 
-#%%
+
+# %%
 
 def training(model, opt, data, type, id):
     file_path = MODEL_PATH + type + '_' + data + '_' + str(id) + '.h5'
-    checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    if type is 'tfl':
+        save = False
+        print("Not saving best models... not implemented for submodules!")
+    else:
+        save = True
+    checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=save, mode='max')
     early = EarlyStopping(monitor="val_acc", mode="max", patience=5, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_acc", mode="max", patience=3, verbose=2)
     callbacks_list = [checkpoint, early, redonplat]
     if data is 'mitbih':
         Y, X, _, _ = get_mitbih()
-    else:
-        Y, X, _, _ = get_ptbdb()
-    if data is 'mitbih':
         model.compile(optimizer=opt, loss=tf.keras.losses.sparse_categorical_crossentropy, metrics=['acc'])
     else:
+        Y, X, _, _ = get_ptbdb()
         model.compile(optimizer=opt, loss=tf.keras.losses.binary_crossentropy, metrics=['acc'])
-    model.fit(X, Y, epochs=1000, callbacks=callbacks_list, validation_split=0.1)
+    if save:
+        model.fit(X, Y, epochs=1, callbacks=callbacks_list, validation_split=0.1)
+    else:
+        # NO CHECKPOINTS FOR TFL -> due to using submodules the save-implementation broke
+        model.fit(X, Y, callbacks=[early, redonplat], validation_split=0.1)
+        model.save_weights(filepath=file_path)
+    return model
 
 
 def testing(model, data, type, id):
@@ -109,9 +124,11 @@ def get_architecture(type, specs):
     elif type is 'ensemble':
         return Ensemble_FFL_block(specs)
 
+
 #%%
 
 def load_models(data, type_ids):
+    print(os.getcwd())
     if isinstance(data, list):
         data = data[0]
     if isinstance(type_ids, tuple):
@@ -130,47 +147,81 @@ def load_models(data, type_ids):
     return model_list
 
 
-def define_stacked_model(models, data):
-    print(models)
+# create stacked model input dataset as outputs from the ensemble
+def stacked_dataset(models, data):
+    if data is 'mitbih':
+        Y, X, Y_test, X_test = get_mitbih()
+    else:
+        Y, X, Y_test, X_test = get_ptbdb()
+    stacked_X = None
+    stacked_X_test = None
+    for model in models:
+        y = model.predict(X, verbose=0)
+        y_test = model.predict(X_test, verbose=0)
+        if stacked_X is None:
+            stacked_X = y
+            stacked_X_test = y_test
+        else:
+            stacked_X = np.dstack((stacked_X, y))
+            stacked_X_test = np.dstack((stacked_X_test, y_test))
+    stacked_X = stacked_X.reshape((stacked_X.shape[0], stacked_X.shape[1] * stacked_X.shape[2]))
+    stacked_X_test = stacked_X_test.reshape((stacked_X_test.shape[0], stacked_X_test.shape[1] * stacked_X_test.shape[2]))
+    return stacked_X, Y, stacked_X_test, Y_test
+
+
+def load_ensemble_nn(data):
     specs = SPEC_LIST['ensemble']
     if data is 'mitbih':
         specs = list(specs)
         specs[-1] = 5
         specs = tuple(specs)
-    # update all layers in all models to not be trainable
-    for i in range(len(models)):
-        model = models[i]
-        for j, layer in enumerate(model.layers):
-            # make not trainable
-            layer.trainable = False
-            # rename to avoid 'unique layer name' issue
-            # layer.name = 'ens_layer_' + str(i + 1) + '_' + str(j)
-    # define multi-headed input
-    ensemble_visible = [model.input for model in models]
-    # merge output from each model
-    ensemble_outputs = [model.output for model in models]
-    merged_output = tf.concat(ensemble_outputs, 1)
-    output = Ensemble_FFL_block(specs=specs)(merged_output)
-    model = tf.keras.Model(inputs=ensemble_visible, outputs=output)
-    return model
+    return Ensemble_FFL_block(specs)
 
 
 # specify settings
-def run_ensemble(data, type_ids, id=500):
+def run_ensemble(data, type_ids, id=500, mode='nn'):
+    # mode can be mean, logistic or nn
     # load all corresponding models into model-list
     models = load_models(data, type_ids)
-    # feed model list into ensemble
-    model = define_stacked_model(models, data=data)
-    opt = tf.keras.optimizers.Adam(0.001)
-    training(model, opt, data, type='ensemble', id=id)
-    testing(model, data, type='ensemble', id=id)
+    # predict datasets with models to generate new ensemble dataset
+    X, Y, X_test, Y_test = stacked_dataset(models, data)
+    if mode is 'nn':
+        file_path = MODEL_PATH + 'ensemble_' + data[0] + '_' + str(id) + '.h5'
+        model = load_ensemble_nn(data)
+        opt = tf.keras.optimizers.Adam(0.001)
+        checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+        early = EarlyStopping(monitor="val_acc", mode="max", patience=5, verbose=1)
+        redonplat = ReduceLROnPlateau(monitor="val_acc", mode="max", patience=3, verbose=2)
+        callbacks_list = [checkpoint, early, redonplat]
+        if data is 'mitbih':
+            model.compile(optimizer=opt, loss=tf.keras.losses.sparse_categorical_crossentropy, metrics=['acc'])
+        else:
+            model.compile(optimizer=opt, loss=tf.keras.losses.binary_crossentropy, metrics=['acc'])
+        model.fit(X, Y, epochs=100, callbacks=callbacks_list, validation_split=0.1)
+        model.predict(X_test, Y_test)
+    # Todo: Use a simple mean of the predictions and a logistic regression for comparsion
+
 
 #%%
 
-def transfer_learning(data, type_id, id=700):
-    tfl_model = load_models(data, type_id)[0]
-    tfl_pretraining = tfl_model(data)
-    output = Ensemble_FFL_block()(tfl_pretraining)
-    model = tf.keras.Model(inputs=data, outputs=output)
+def transfer_learning(data_tfl, data, type_id, id=700, freeze=True):
+    tfl_model = load_models(data_tfl, type_id)[0]
+    comb_model = tf.keras.Sequential()
+    for j, layer in enumerate(tfl_model.layers):
+        if layer.name is 'ffl_block':
+            del_id = j
+    for layer in tfl_model.layers[:-del_id]:  # just exclude last layer from copying
+        comb_model.add(layer)
+    if freeze:
+        for layer in comb_model.layers:
+            layer.trainable = False
+    ffl_block = load_ensemble_nn(data)
+    comb_model.add(ffl_block)
     opt = tf.keras.optimizers.Adam(0.001)
-    training(model, opt, data, type='ensemble', id=id)
+    input_shape = (None, 187, 1)
+    comb_model.build(input_shape)
+    # print(comb_model.summary())
+    trained_model = training(comb_model, opt, data, 'tfl', id)
+    output = testing(trained_model, data, 'tfl', id)
+    df = pd.DataFrame.from_dict(output, orient="index")
+    df.to_csv("results_tfl.csv")
