@@ -27,15 +27,16 @@ SPEC_LIST = {'cnn': CNN_SPECS,
 
 # VISUALIZATION
 print("VISUALIZATION")
-
 n_examples = 5
-vis_data('mitbih', n_examples)
-vis_data('ptbdb', n_examples)
 
 # Individual visualization mitbih
+vis_data('mitbih', n_examples)
+
 # Individual visualization ptbdb
+vis_data('ptbdb', n_examples)
 
 # Global visualization mitbih
+# Was sötte mer da mache?
 # Global visualization ptbdb
 
 print("")
