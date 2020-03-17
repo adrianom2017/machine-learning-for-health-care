@@ -1,8 +1,7 @@
 #%%
-
 from ecg_arrythmia_analysis.code.dataloader import *
 from ecg_arrythmia_analysis.code.architectures import *
-# from ecg_arrythmia_analysis.code.visualization import *
+from ecg_arrythmia_analysis.code.visualization import *
 from ecg_arrythmia_analysis.code.functions import *
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from sklearn.metrics import f1_score, accuracy_score
@@ -19,10 +18,10 @@ print("VISUALIZATION")
 n_examples = 5
 
 # Individual visualization mitbih
-# vis_data('mitbih', n_examples)
+vis_data('mitbih', n_examples)
 
 # Individual visualization ptbdb
-# vis_data('ptbdb', n_examples)
+vis_data('ptbdb', n_examples)
 
 # Global visualization mitbih
 # Was sötte mer da mache?
