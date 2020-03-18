@@ -3,8 +3,6 @@ from ecg_arrythmia_analysis.code.dataloader import *
 from ecg_arrythmia_analysis.code.architectures import *
 from ecg_arrythmia_analysis.code.visualization import *
 from ecg_arrythmia_analysis.code.functions import *
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
-from sklearn.metrics import f1_score, accuracy_score
 
 #%%
 

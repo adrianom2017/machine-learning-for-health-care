@@ -220,7 +220,6 @@ def transfer_learning(data_tfl, data, type_id, id=700, freeze=True):
     opt = tf.keras.optimizers.Adam(0.001)
     input_shape = (None, 187, 1)
     comb_model.build(input_shape)
-    # print(comb_model.summary())
     trained_model = training(comb_model, opt, data, 'tfl', id)
     output = testing(trained_model, data, 'tfl', id)
     df = pd.DataFrame.from_dict(output, orient="index")
