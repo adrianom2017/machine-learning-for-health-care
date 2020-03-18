@@ -315,6 +315,7 @@ def testing(model, data, type_, id_):
     model.build(input_shape=(None, X_test.shape[1], X_test.shape[2]))
     model.load_weights(file_path)
     pred_test = model.predict(X_test)
+    print(pred_test)
     pred_test = np.argmax(pred_test, axis=-1)
     f1 = f1_score(Y_test, pred_test, average="macro")
     print("Test f1 score : %s " % f1)
@@ -562,10 +563,6 @@ n_examples = 5
 # Individual visualization ptbdb
 # vis_data('ptbdb', n_examples)
 
-# Global visualization mitbih
-# Was sötte mer da mache?
-# Global visualization ptbdb
-
 print("")
 #%%
 
@@ -579,7 +576,9 @@ output = architect(mode='testing', data='mitbih', type='cnn', run_id=100)
 
 # Run CNN on ptbdb
 # architect(mode='training', data='ptbdb', type='cnn', run_id=150)
+"""
 output = architect('testing', 'ptbdb', 'cnn', 150)
+"""
 print(output)
 # evaluation(y_test=output['target'], y_pred=output['prediction'], data='ptbdb', model='cnn')
 
@@ -596,7 +595,9 @@ output = architect('testing', 'mitbih', 'rcnn', 200)
 
 # Run RCNN on ptbdb
 # architect('training', 'ptbdb', 'rcnn', 250)
+"""
 output = architect('testing', 'ptbdb', 'rcnn', 250)
+"""
 # evaluation(y_test=output['target'], y_pred=output['prediction'], data='ptbdb', model='rcnn')
 
 print("")
